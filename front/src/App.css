@@ -1,0 +1,39 @@
+body,
+html {
+
+  padding: 0px;
+  margin: 0px;
+}
+
+#root {}
+
+#library {
+  background-color: rgba(255, 0, 0, 0.082);
+  width: 500px;
+  height: 50px;
+}
+
+#control_panel {
+  width: 500px;
+  height: 50px;
+  background-color: rgba(0, 0, 255, 0.062);
+}
+
+.library-item {
+  width: 50px;
+  height: 50px;
+  border: 2px solid rgba(197, 201, 7, 0.603);
+  position: relative;
+}
+
+.library-item canvas {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
+.library-item .label {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}

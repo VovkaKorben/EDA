@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "name": "Frontend (npm run dev)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "cwd": "${workspaceFolder}/front",
+      "console": "integratedTerminal",
+      "preLaunchTask": "clearConsole"
+    },
+    {
+      "name": "Browser Start",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/front/src"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "FRONT",
+      "configurations": [
+        "Frontend (npm run dev)",
+        "Browser Start"
+      ],
+      "stopAll": true
+    }
+  ]
+}
