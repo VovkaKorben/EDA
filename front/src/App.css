@@ -7,16 +7,29 @@ html {
 
 #root {}
 
+
+
+#control_panel {
+  width: 500px;
+  height: 34px;
+  background-color: rgba(0, 0, 255, 0.062);
+
+  display: flex;
+
+}
+
+.control-button {
+  border: 1px solid rgb(7, 10, 201);
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
 #library {
   background-color: rgba(255, 0, 0, 0.082);
   width: 500px;
   height: 50px;
-}
-
-#control_panel {
-  width: 500px;
-  height: 50px;
-  background-color: rgba(0, 0, 255, 0.062);
+  display: flex;
 }
 
 .library-item {

@@ -26,7 +26,7 @@ const LibraryItem = ({ draw, label }) => {
     return (
         <div className="library-item">
             <canvas ref={canvasRef} width="50" height="50" />
-            <div className='label'>12</div>
+            <div className='label'>{label}</div>
         </div>
 
     );
@@ -37,13 +37,16 @@ const Library = () => {
     return (
         <div id="library">
             {elems.map((e) => {
-                return <LibraryItem key={e} />
+                return <LibraryItem
+                    key={e}
+                    label={e}
+
+                />
 
             })
 
 
             }
-            {/* <canvas /> */}
         </div>
 
     );
