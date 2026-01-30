@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-
+import { dpr } from '../helpers/utils.js';
 // Константы вынесены вверх для удобства настройки сетки
 const logicalWidth = 300;
 const logicalHeight = 300;

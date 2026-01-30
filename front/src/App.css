@@ -3,6 +3,10 @@ html {
 
   padding: 0px;
   margin: 0px;
+  font-family: "Saira Condensed", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 12px;
 }
 
 #root {}
@@ -26,20 +30,27 @@ html {
 }
 
 #library {
-  background-color: rgba(255, 0, 0, 0.082);
-  width: 500px;
-  height: 50px;
+  background-color: rgba(0, 255, 123, 0.082);
+  /* width: 500px; */
+  /* height: 66px; */
   display: flex;
+  gap: 2px;
+  /* box-sizing: border-box; */
 }
 
 .library-item {
-  width: 50px;
-  height: 50px;
-  border: 2px solid rgba(197, 201, 7, 0.603);
+
+  width: var(--element-width);
+  height: var(--element-height);
+  border: 1px solid rgba(0, 0, 0, 0.603);
   position: relative;
+  box-sizing: border-box;
+
 }
 
 .library-item canvas {
+  width: var(--element-width);
+  height: var(--element-height);
   position: absolute;
   top: 0px;
   left: 0px;
@@ -47,6 +58,15 @@ html {
 
 .library-item .label {
   position: absolute;
-  top: 0px;
-  left: 0px;
+  
+
+bottom: 2px;
+    left: 0px;
+    width: 100%;       /* растягиваем на всю ширину иконки */
+    text-align: center; /* центрируем текст */
+    /* font-size: 10px; */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
 }
