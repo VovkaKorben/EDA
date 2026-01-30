@@ -9,13 +9,30 @@ html {
   font-size: 12px;
 }
 
-#root {}
 
 
 
-#control_panel {
-  width: 500px;
-  height: 34px;
+
+#root {
+  display: grid;
+  grid-template-columns: 1fr 300px 300px;
+grid-template-rows: 32px 32px 1fr;
+height: 100vh;
+  grid-auto-columns: 1fr;
+  gap: 0px 0px;
+  grid-auto-flow: row;
+  grid-template-areas:
+    "header header header"
+    "control-bar control-bar control-bar"
+    "schema elem-schema library";
+}
+
+.header {
+  grid-area: header;
+}
+
+.control-bar {
+  grid-area: control-bar;
   background-color: rgba(0, 0, 255, 0.062);
 
   display: flex;
@@ -29,13 +46,11 @@ html {
   cursor: pointer;
 }
 
-#library {
+.library {
+  grid-area: library;
   background-color: rgba(0, 255, 123, 0.082);
-  /* width: 500px; */
-  /* height: 66px; */
   display: flex;
   gap: 2px;
-  /* box-sizing: border-box; */
 }
 
 .library-item {
@@ -58,15 +73,35 @@ html {
 
 .library-item .label {
   position: absolute;
-  
 
-bottom: 2px;
-    left: 0px;
-    width: 100%;       /* растягиваем на всю ширину иконки */
-    text-align: center; /* центрируем текст */
-    /* font-size: 10px; */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 
+  bottom: 2px;
+  left: 0px;
+  width: 100%;
+  /* растягиваем на всю ширину иконки */
+  text-align: center;
+  /* центрируем текст */
+  /* font-size: 10px; */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+}
+
+.elem-schema {
+  grid-area: elem-schema;
+}
+
+.schema {
+  grid-area: schema;
+}
+
+
+
+
+
+
+
+.schema-canvas {
+  border: 1px solid red;
 }

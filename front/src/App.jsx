@@ -9,7 +9,8 @@ import { getPrimitiveBounds, expandBounds } from './helpers/geo.js';
 
 
 function App() {
-    const [elems, setElems] = useState(JSON.parse(localStorage.getItem('elems')) || []);
+    const [libElements, setElems] = useState(JSON.parse(localStorage.getItem('libElements')) || []);
+    const [schemaElements, setSchemaElements] = useState(JSON.parse(localStorage.getItem('schemaElements')) || []);
 
     // actions itself
     const LoadElems = async () => {
@@ -59,19 +60,54 @@ function App() {
         }
     }
     useEffect(() => {
-        localStorage.setItem('elems', JSON.stringify(elems));
-    }, [elems]);
+        localStorage.setItem('libElements', JSON.stringify(libElements));
+    }, [libElements]);
+
+    useEffect(() => {
+        localStorage.setItem('schemaElements', JSON.stringify(schemaElements));
+    }, [schemaElements]);
+
     // buttons processing
     const handleAction = (actionId) => {
         switch (actionId) {
             case 1: LoadElems(); break;
         }
     }
+
+    const handleElementDropped = (elementData, x, y) => {
+        const newElement = {
+            id: Date.now(), // Уникальный ID
+            type: elementData.name,
+            x: x,
+            y: y,
+            // Тут можно добавить дефолтные параметры (поворот и т.д.)
+        };
+        console.log(newElement);
+        setSchemaElements([...schemaElements, newElement]);
+    };
+
     return (
         <>
-            <Controls onAction={handleAction} />
-            <SchemaCanvas />
-            <Library elems={elems} />
+
+
+            <div className="header"></div>
+            <div className="control-bar">  <Controls onAction={handleAction} /></div>
+            <div className="library">
+                <Library
+                    elems={libElements}
+                />
+            </div>
+            <div className="elem-schema"></div>
+            <div className="schema">   <SchemaCanvas
+                // onWheel={handleWheel}
+                elements={schemaElements}
+                onElementDropped={handleElementDropped}
+            /></div>
+
+
+
+
+
         </>
     )
 }
