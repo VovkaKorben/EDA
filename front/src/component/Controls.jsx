@@ -18,7 +18,8 @@ const ControlButton = ({ text, onClick }) => {
 
 const Controls = ({ onAction }) => {
     return (
-        <div id="control_panel">
+        <React.Fragment>
+
             {buttonsCodes.map((e) => {
                 return <ControlButton
                     key={e.id}
@@ -32,10 +33,13 @@ const Controls = ({ onAction }) => {
 
 
             }
+        </React.Fragment>
 
 
-        </div>
 
     );
 };
 export default Controls;
+
+// <div id="control_panel">
+// </div>

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { drawElement, getWH } from '../helpers/geo.js';
-const elemSize = 100;
+const elemSize = 50;
 const elemMargin = 5;
 
 
@@ -10,6 +10,7 @@ const elemMargin = 5;
 const LibraryItem = ({ elem }) => {
     const canvasRef = useRef(null);
 
+    // draw principial
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -20,8 +21,9 @@ const LibraryItem = ({ elem }) => {
         drawElement(elem, 3, { x: elemSize / 2, y: elemSize / 2 }, ctx);
 
     }, [elem]);
+
+    // store elem in drag object
     const handleDragStart = (e) => {
-        // Сериализуем данные элемента, чтобы передать их
         e.dataTransfer.setData('compData', JSON.stringify(elem));
         e.dataTransfer.effectAllowed = 'move';
     };
