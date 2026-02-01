@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { drawElement, getWH } from '../helpers/geo.js';
+import { useRef, useEffect } from 'react';
+import { drawElement } from '../helpers/geo.js';
 const elemSize = 50;
 const elemMargin = 5;
 
@@ -14,11 +14,19 @@ const LibraryItem = ({ elem }) => {
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-
-
-
         ctx.clearRect(0, 0, elemSize, elemSize);
-        drawElement(elem, 3, { x: elemSize / 2, y: elemSize / 2 }, ctx);
+
+        const toDraw = {
+            ...elem,
+            pos: {
+                x: elemSize / 2,
+                y: elemSize / 2
+            },
+            zoom: 2,
+            rotate: 0,
+        };
+
+        drawElement(toDraw, ctx);
 
     }, [elem]);
 
@@ -41,15 +49,16 @@ const LibraryItem = ({ elem }) => {
     );
 
 }
-
+// //{elems.map((elem) => {
 const Library = ({ elems }) => {
 
 
     return (
         <div id="library">
-            {elems.map((elem) => {
+            {Object.values(elems).map((elem) => {
+
                 return <LibraryItem
-                    key={elem.id}
+                    key={elem.type_id}
                     elem={elem}
 
                 />

@@ -1,59 +1,71 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { dpr } from '../helpers/utils.js';
 import { clamp, drawElement } from '../helpers/geo.js';
-const zoomLevels = [1, 2, 4, 8, 16, 32];
+import { prettify } from '../helpers/debug.js';
+const zoomLevels = [1, 1.5, 2, 2.5, 3, 4, 6, 8, 16, 32];
+const DRAG_BUTTON = 0;
+const SchemaCanvas = forwardRef(({ libElements, schemaElements, onAddElement }, ref) => {
 
-const SchemaCanvas = ({ libElements, schemaElements, onElementDropped }) => {
+
     const canvasRef = useRef(null);
+
+
+    const DEFAULT_VIEW = { zoomIndex: 0, x: 0, y: 0 };
     const [view, setView] = useState(() => {
-        const saved = localStorage.getItem('view');
-        return saved ? JSON.parse(saved) : { zoomIndex: 2, x: 0, y: 0 };
+        //    return DEFAULT_VIEW;
+        const saved = localStorage.getItem('view'); return saved ? JSON.parse(saved) : DEFAULT_VIEW;
     });
+    useImperativeHandle(ref, () => ({ resetView: () => { setView(DEFAULT_VIEW); } }));
+
     const drawAll = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const zoom = zoomLevels[view.zoomIndex];
-  console.log('--------------------------------');
-        // 2. Проходим по всем элементам на схеме
-        schemaElements.forEach(elem => {
-            // Вычисляем экранную позицию центра элемента:
-            // x_screen = x_world * zoom + view.x
-            const pos = {
-                x: elem.x * zoom + view.x,
-                y: elem.y * zoom + view.y
-            };
-            const libElement = libElements[elem.type];
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-            console.log(elem.debug, pos);
-            drawElement(libElement, zoom, pos, ctx);
-            // Твоя универсальная процедура рисования (уже с save/restore внутри)
-            // drawElement(elem, zoom, screenPos, ctx);
+        const zoom = zoomLevels[view.zoomIndex];
+        //console.log('--------------------------------');
+
+        // each element on schematic
+        schemaElements.forEach(elem => {
+            const libElement = libElements[elem.type_id];
+
+
+            const toDraw = {
+                ...libElement,
+                pos: {
+                    x: Math.round(elem.pos.x * zoom - view.x),
+                    y: Math.round(elem.pos.y * zoom - view.y)
+                },
+                zoom: zoom,
+                rotate: elem.rotate,
+            };
+            drawElement(toDraw, ctx);
         });
 
         // Тут позже добавим рисование сетки и проводов
     }, [view, libElements, schemaElements]); // Пересоздаем функцию только если изменился зум, позиция или массив элементов
+    const drawRef = useRef(drawAll);
+    useEffect(() => { drawRef.current = drawAll; }, [drawAll]);
 
-    // ResizeObserver
-    useEffect(() => {
-        drawAll();
+    useEffect(() => {// ResizeObserver
+        drawRef.current();
     }, [drawAll]);
-
-    // update canvas size
-    useEffect(() => {
+    useEffect(() => {// update canvas size
         const canvas = canvasRef.current;
         if (!canvas) return;
         const resizeObserver = new ResizeObserver(() => {
             const { clientWidth, clientHeight } = canvas;
             canvas.width = clientWidth * dpr;
             canvas.height = clientHeight * dpr;
+            drawRef.current();
         });
         resizeObserver.observe(canvas);
+
         return () => resizeObserver.disconnect();
     }, []);
-
-
     // POS + ZOOM
     useEffect(() => {
         localStorage.setItem('view', JSON.stringify(view));
@@ -66,76 +78,118 @@ const SchemaCanvas = ({ libElements, schemaElements, onElementDropped }) => {
         }
         const wheel_dir = Math.sign(e.deltaY);
         setView(prev => {
-            const oldZoomIndex = prev.zoomIndex;
-            const newZoomIndex = clamp(oldZoomIndex + wheel_dir, 0, zoomLevels.length - 1);
-            const ratio = newZoomIndex / oldZoomIndex;
+            const oldZoom = zoomLevels[prev.zoomIndex];
+            const newZoomIndex = clamp(prev.zoomIndex + wheel_dir, 0, zoomLevels.length - 1);
+            const newZoom = zoomLevels[newZoomIndex];
+
             const new_view = {
                 zoomIndex: newZoomIndex,
-                x: mousePos.x - (mousePos.x - prev.x) * ratio,
-                y: mousePos.y - (mousePos.y - prev.y) * ratio,
+                x: (mousePos.x + prev.x) * (newZoom / oldZoom) - mousePos.x,
+                y: (mousePos.y + prev.y) * (newZoom / oldZoom) - mousePos.y,
             };
             return new_view;
         });
     };
 
+    /*
+     const handleDrop = (e) => {
+            e.preventDefault();
+            const data = JSON.parse(e.dataTransfer.getData('compData'));
+    
+            // Считаем координаты относительно холста
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+    
+            // Передаём наверх в App информацию: ЧТО и КУДА бросили
+            onElementDropped(data, x, y);
+        };*/
+    const handleDrop = (e) => {
+        e.preventDefault();
+        const data = JSON.parse(e.dataTransfer.getData('compData'));
+        const canvasRect = canvasRef.current.getBoundingClientRect();
 
+        const zoom = zoomLevels[view.zoomIndex];
+        const pos = {
+            x: (e.clientX - canvasRect.left + view.x) / zoom,
+            y: (e.clientY - canvasRect.top + view.y) / zoom,
+        }
+        const newElement = {
+            id: Date.now(),
+            type_id: data.type_id,
+            pos: pos,
+            rotate: 0
+        };
+        onAddElement(newElement);
+    };
 
 
 
     const handleDragOver = (e) => {
         e.preventDefault(); // РАЗРЕШАЕМ DROP
     };
-    const handleDrop = (e) => {
-        e.preventDefault();
-        const data = JSON.parse(e.dataTransfer.getData('compData'));
 
-        // Считаем координаты относительно холста
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
 
-        // Передаём наверх в App информацию: ЧТО и КУДА бросили
-        onElementDropped(data, x, y);
-    };
+    const isDragging = useRef(false);
+    const lastPos = useRef(false);
 
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+    const tz = zoomLevels[view.zoomIndex];
+    const globalPos = {
+        x: (mousePos.x + view.x) / tz,
+        y: (mousePos.y + view.y) / tz
+    }
 
     const handleMouseDown = (e) => {
-        const canvas = canvasRef.current;
-        const rect = canvas.getBoundingClientRect();
+        if (e.button !== DRAG_BUTTON) return;
+        isDragging.current = true;
+        lastPos.current = { x: e.clientX, y: e.clientY };
+    };
+    const handleMouseMove = (e) => {
+        const rect = canvasRef.current.getBoundingClientRect();
+        setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+        if (!isDragging.current) return;
+        const dx = e.clientX - lastPos.current.x;
+        const dy = e.clientY - lastPos.current.y;
+        const zoom = zoomLevels[view.zoomIndex];
+        setView(prev => (
+            { ...prev, x: prev.x - dx, y: prev.y - dy }
+        ));
 
-        // Точный расчет координат клика относительно логического поля
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const ctx = canvas.getContext('2d');
-        ctx.strokeStyle = 'blue';
-
-        // Рисуем компонент (в будущем — берем из localStorage)
-        drawCircle(ctx, x, y, 10);
-
-        console.log(`Команда в базу: c(${x.toFixed(0)},${y.toFixed(0)},10)`);
+        lastPos.current = { x: e.clientX, y: e.clientY };
+    };
+    const handleMouseUp = (e) => {
+        //console.log(`zoom: ${zoomLevels[view.zoomIndex]} | ${prettify(view, 0)} local : ${prettify(mousePos, 0)} | global: ${prettify(globalPos, 0)}`);
+        if (e.button !== DRAG_BUTTON) return;
+        isDragging.current = false;
     };
 
+
     return (
-
-        <canvas
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onWheel={handleWheel}
-            ref={canvasRef}
-            // onMouseDown={onWheel}
-            style={{
-                width: '90%',
-                height: '90%',
-                display: 'block',
-                border: '2px solid #333',
-                background: '#fff',
-                cursor: 'crosshair'
-            }}
-        />
-
+        <React.Fragment>
+            zoom: {zoomLevels[view.zoomIndex]} | {prettify(view, 0)} local : {prettify(mousePos, 0)} | global: {prettify(globalPos, 0)}
+            <canvas
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onWheel={handleWheel}
+                ref={canvasRef}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                style={{
+                    width: '90%',
+                    height: '90%',
+                    display: 'block',
+                    border: '2px solid #333',
+                    background: '#fff',
+                    // cursor: 'crosshair'
+                }}
+            />
+        </React.Fragment>
 
     );
-};
+});
 
+
+SchemaCanvas.displayName = 'SchemaCanvas';
 export default SchemaCanvas;

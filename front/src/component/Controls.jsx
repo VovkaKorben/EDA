@@ -1,9 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 
 
 const buttonsCodes = [
     { id: 1, caption: 'load', ico: '' },
-    { id: 2, caption: 'clear', ico: '' }
+    { id: 2, caption: 'clear', ico: '' },
+    { id: 3, caption: 'reset view', ico: '' }
 ]
 
 const ControlButton = ({ text, onClick }) => {

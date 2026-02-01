@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Controls from './component/Controls';
 import SchemaCanvas from './component/SchemaCanvas';
 import ElementsList from './component/ElementsList';
@@ -13,6 +13,14 @@ import { prettify } from './helpers/debug.js';
 function App() {
     const [libElements, setLibElements] = useState(JSON.parse(localStorage.getItem('libElements')) || []);
     const [schemaElements, setSchemaElements] = useState(JSON.parse(localStorage.getItem('schemaElements')) || []);
+    /* const [schemaElements, setSchemaElements] = useState(
+         [
+             { "id": 1769955447118, "type_id": 3, "pos": { "x": 200, "y": 100 } },
+                 { "id": 17699554418, "type_id": 2, "pos": { "x": 300, "y": 150 } }
+         ]);
+ */
+    const refSchemaCanvas = useRef(null);
+
 
     // actions itself
     const LoadElems = async () => {
@@ -54,7 +62,7 @@ function App() {
                 }
                 console.log(prettify(pins, 0));
 
-                elem_data[e.id] =
+                elem_data[e.type_id] =
                 {
                     ...e,
                     turtle: parsedGroups,
@@ -81,21 +89,12 @@ function App() {
         switch (actionId) {
             case 1: LoadElems(); break;
             case 2: ClearSchema(); break;
+            case 3: refSchemaCanvas.current?.resetView(); break;
         }
     }
 
-    const handleElementDropped = (elementData, x, y) => {
-        const newElement = {
-            id: Date.now(), // Уникальный ID
-            type: elementData.id,
-            x: x,
-            y: y,
-            debug: elementData.name,
-            rotate: 0,
-            // Тут можно добавить дефолтные параметры (поворот и т.д.)
-        };
-        console.log(prettify(newElement, 0));
-        setSchemaElements([...schemaElements, newElement]);
+    const handleAddElement = (newElement) => {
+        setSchemaElements(prev => [...prev, newElement]);
     };
 
     return (
@@ -112,11 +111,13 @@ function App() {
             <div className="elem-schema">
                 <ElementsList elements={schemaElements} />
             </div>
-            <div className="schema">   <SchemaCanvas
-                libElements={libElements}
-                schemaElements={schemaElements}
-                onElementDropped={handleElementDropped}
-            /></div>
+            <div className="schema">
+                <SchemaCanvas
+                    ref={refSchemaCanvas}
+                    libElements={libElements}
+                    schemaElements={schemaElements}
+                    onAddElement={handleAddElement}
+                /></div>
 
 
 
