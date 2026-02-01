@@ -34,10 +34,9 @@ html {
 }
 
 
-.elements-list
-{
-border: 1px solid rgba(25, 0, 255, 0.334);
-
+.elements-list {
+  border: 1px solid rgba(25, 0, 255, 0.334);
+width: 100%;
 }
 
 
@@ -70,7 +69,7 @@ border: 1px solid rgba(25, 0, 255, 0.334);
 .elem-schema {
   grid-area: elem-schema;
   background-color: rgba(128, 11, 118, 0.062);
-   display: flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2px;
@@ -111,5 +110,5 @@ border: 1px solid rgba(25, 0, 255, 0.334);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-font-size: 10px;
+  font-size: 10px;
 }

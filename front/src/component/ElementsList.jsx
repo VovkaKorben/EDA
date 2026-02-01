@@ -3,16 +3,17 @@ import { prettify } from '../helpers/debug.js';
 
 
 
-const ElementsList = ({ elements }) => {
+const ElementsList = ({ schemaElements, libElements }) => {
     return (
         <React.Fragment>
 
-            {elements.map((e) => {
+            {schemaElements.map((e) => {
                 return <div
                     key={e.id}
                     className='elements-list'
                 >
-                  {prettify(e)}
+                    {libElements[e.typeId].abbr}{e.typeIndex}
+                    {/* {prettify(e,0)} */}
 
                 </div>
 

@@ -8,15 +8,19 @@ import { API_URL } from './helpers/utils.js';
 import { getPrimitiveBounds, expandBounds } from './helpers/geo.js';
 import { prettify } from './helpers/debug.js';
 
-
+const defaultSchemaElements = {
+    elements: [],
+    wires: []
+};
 
 function App() {
     const [libElements, setLibElements] = useState(JSON.parse(localStorage.getItem('libElements')) || []);
-    const [schemaElements, setSchemaElements] = useState(JSON.parse(localStorage.getItem('schemaElements')) || []);
+    const [schemaElements, setSchemaElements] = useState(
+        JSON.parse(localStorage.getItem('schemaElements')) || defaultSchemaElements);
     /* const [schemaElements, setSchemaElements] = useState(
          [
-             { "id": 1769955447118, "type_id": 3, "pos": { "x": 200, "y": 100 } },
-                 { "id": 17699554418, "type_id": 2, "pos": { "x": 300, "y": 150 } }
+             { "id": 1769955447118, "typeId": 3, "pos": { "x": 200, "y": 100 } },
+                 { "id": 17699554418, "typeId": 2, "pos": { "x": 300, "y": 150 } }
          ]);
  */
     const refSchemaCanvas = useRef(null);
@@ -62,7 +66,7 @@ function App() {
                 }
                 console.log(prettify(pins, 0));
 
-                elem_data[e.type_id] =
+                elem_data[e.typeId] =
                 {
                     ...e,
                     turtle: parsedGroups,
@@ -75,7 +79,7 @@ function App() {
             setLibElements(elem_data);
         }
     }
-    const ClearSchema = () => { setSchemaElements([]) }
+    const ClearSchema = () => { setSchemaElements(defaultSchemaElements) }
     useEffect(() => {
         localStorage.setItem('libElements', JSON.stringify(libElements));
     }, [libElements]);
@@ -94,7 +98,15 @@ function App() {
     }
 
     const handleAddElement = (newElement) => {
-        setSchemaElements(prev => [...prev, newElement]);
+        setSchemaElements(prev => ({
+            ...prev,
+            elements: [
+                ...prev.elements,
+                newElement
+            ]
+
+
+        }));
     };
 
     return (
@@ -109,7 +121,10 @@ function App() {
                 />
             </div>
             <div className="elem-schema">
-                <ElementsList elements={schemaElements} />
+                <ElementsList
+                    schemaElements={schemaElements.elements}
+                    libElements={libElements}
+                />
             </div>
             <div className="schema">
                 <SchemaCanvas

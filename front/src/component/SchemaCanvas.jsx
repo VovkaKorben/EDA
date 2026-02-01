@@ -29,8 +29,8 @@ const SchemaCanvas = forwardRef(({ libElements, schemaElements, onAddElement }, 
         //console.log('--------------------------------');
 
         // each element on schematic
-        schemaElements.forEach(elem => {
-            const libElement = libElements[elem.type_id];
+        schemaElements.elements.forEach(elem => {
+            const libElement = libElements[elem.typeId];
 
 
             const toDraw = {
@@ -106,19 +106,42 @@ const SchemaCanvas = forwardRef(({ libElements, schemaElements, onAddElement }, 
         };*/
     const handleDrop = (e) => {
         e.preventDefault();
+        // convert drag to object
         const data = JSON.parse(e.dataTransfer.getData('compData'));
-        const canvasRect = canvasRef.current.getBoundingClientRect();
 
+        // calculate insertion position
+        const canvasRect = canvasRef.current.getBoundingClientRect();
         const zoom = zoomLevels[view.zoomIndex];
         const pos = {
             x: (e.clientX - canvasRect.left + view.x) / zoom,
             y: (e.clientY - canvasRect.top + view.y) / zoom,
         }
+
+        // get first available element index
+        let newTypeIndex = 1;
+        const searchType = libElements[data.typeId].abbr.toUpperCase();
+        const fil = schemaElements.elements.filter((e) => libElements[e.typeId].abbr.toUpperCase() === searchType);
+        const m = fil.map((e) => e.typeIndex);
+        m.sort((a, b) => a - b);
+        for (const e of m) {
+            if (e !== newTypeIndex)
+                break;
+            newTypeIndex++
+        }
+
+
+
+
+
+
+
+
         const newElement = {
             id: Date.now(),
-            type_id: data.type_id,
+            typeId: data.typeId,
             pos: pos,
-            rotate: 0
+            rotate: 0,
+            typeIndex: newTypeIndex
         };
         onAddElement(newElement);
     };
@@ -148,15 +171,20 @@ const SchemaCanvas = forwardRef(({ libElements, schemaElements, onAddElement }, 
     const handleMouseMove = (e) => {
         const rect = canvasRef.current.getBoundingClientRect();
         setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-        if (!isDragging.current) return;
-        const dx = e.clientX - lastPos.current.x;
-        const dy = e.clientY - lastPos.current.y;
-        const zoom = zoomLevels[view.zoomIndex];
-        setView(prev => (
-            { ...prev, x: prev.x - dx, y: prev.y - dy }
-        ));
 
-        lastPos.current = { x: e.clientX, y: e.clientY };
+        // canvas drag handler
+        if (isDragging.current) {
+            const dx = e.clientX - lastPos.current.x;
+            const dy = e.clientY - lastPos.current.y;
+            setView(prev => (
+                { ...prev, x: prev.x - dx, y: prev.y - dy }
+            ));
+            lastPos.current = { x: e.clientX, y: e.clientY };
+            return;
+        }
+
+        // simple mouse move
+
     };
     const handleMouseUp = (e) => {
         //console.log(`zoom: ${zoomLevels[view.zoomIndex]} | ${prettify(view, 0)} local : ${prettify(mousePos, 0)} | global: ${prettify(globalPos, 0)}`);
@@ -167,7 +195,8 @@ const SchemaCanvas = forwardRef(({ libElements, schemaElements, onAddElement }, 
 
     return (
         <React.Fragment>
-            zoom: {zoomLevels[view.zoomIndex]} | {prettify(view, 0)} local : {prettify(mousePos, 0)} | global: {prettify(globalPos, 0)}
+            {`Z: ${zoomLevels[view.zoomIndex]} | V: [${view.x.toFixed(2)}, ${view.y.toFixed(2)}] | L: [${mousePos.x.toFixed(2)}, ${mousePos.y.toFixed(2)}] | G: [${globalPos.x.toFixed(2)}, ${globalPos.y.toFixed(2)}]`}
+            {/* zoom: {zoomLevels[view.zoomIndex]} | {prettify(view, 0)} local : {prettify(mousePos, 0)} | global: {prettify(globalPos, 0)} */}
             <canvas
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}

@@ -58,7 +58,7 @@ const Library = ({ elems }) => {
             {Object.values(elems).map((elem) => {
 
                 return <LibraryItem
-                    key={elem.type_id}
+                    key={elem.typeId}
                     elem={elem}
 
                 />
